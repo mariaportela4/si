@@ -198,6 +198,78 @@ class Dataset:
         y = np.random.randint(0, n_classes, n_samples)
         return cls(X, y, features=features, label=label)
 
+    def dropna (self) -> 'Dataset':
+        """
+            Removes all samples containing at least one null value (NaN) from the dataset.
+
+            This method filters out rows in the feature matrix `X` that contain any NaN values,
+            and updates the target vector `y` to maintain alignment with the filtered `X`.
+
+            Returns:
+            --------
+            self : Dataset
+                The updated Dataset object, with rows containing null values removed.
+                This allows for method chaining.
+            """
+        nan_mask = ~np.any(np.isnan(self.X), axis=1)
+        self.X = self.X[nan_mask]
+        self.y = self.y [nan_mask]
+
+        return self
+
+    def fillna (self, value) -> 'Dataset':
+        """
+            Replaces all null values in the feature matrix 'X' with a specefied value, the mean, or the median of each feature.
+
+            Parameters:
+            -----------
+            value : float, str
+                The value to replace NaN with. If "mean", replaces NaN with the feature's mean.
+                If "median", replaces NaN with the feature's median.
+
+            Returns:
+            --------
+            self : Dataset
+                Modified dataset with no NaNs in independent features.
+            """
+            # Create a mask for NaN values
+        nan_mask = np.isnan(self.X)
+
+        if isinstance (value, (int,float)):
+            fill_values = np.full(self.X.shape[1], float(value))
+        elif value == "mean":
+            fill_values = np.nanmean(self.X, axis=0)
+        elif value == "median":
+            fill_values = np.nanmedian(self.X, axis=0)
+        else:
+            raise ValueError("Value must be float, 'mean', or 'median'")
+        
+        # Replace NaNs column by column
+        for col in range(self.X.shape[1]): self.X[nan_mask[:,col],col] = fill_values[col]
+
+        return self
+
+    def remove_by_index (self, index) -> 'Dataset':
+        """
+        Remove the sample ate the given index from X (and y if present).
+        
+        Parameteres
+        -----------
+        index : int
+            Index of the sample to remove
+        
+        Returns
+        -------
+        self : Dataset
+            Modified dataset with the sample removed.
+        """
+
+        self.X =np.delete(self.X, index, axis=0) # Remove from X 
+
+        if self.y is not None: 
+            self.y = np.delete(self.y, index, axis= 0) # Remove from y 
+
+        return self
 
 if __name__ == '__main__':
     X = np.array([[1, 2, 3], [4, 5, 6]])
