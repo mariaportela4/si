@@ -25,6 +25,11 @@ def tanimoto_similarity(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     denominator = sum_squares_x + sum_squares_y - dot_products
 
     # Tanimoto Similarity
-    similarity = dot_products / denominator
+    similarity = np.divide(
+        dot_products,
+        denominator,
+        out=np.ones_like(dot_products, dtype=float),  # default 1 if denominator=0
+        where=denominator != 0
+    )
 
     return similarity

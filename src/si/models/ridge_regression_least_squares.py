@@ -1,6 +1,6 @@
 import numpy as np
 from si.base.model import Model
-from si.metrics import mse
+from si.metrics.mse import mse
 
 
 class RidgeRegressionLeastSquares (Model):
@@ -53,4 +53,4 @@ class RidgeRegressionLeastSquares (Model):
         """ Compute the Mean Squared Error (MSE) for the dataset.
         """
         predictions= self.predict(dataset)
-        return mse(dataset.y, predictions)
+        return mse (dataset.y, predictions)
