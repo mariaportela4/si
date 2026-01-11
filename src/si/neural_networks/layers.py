@@ -4,6 +4,7 @@ import copy
 import numpy as np
 
 from si.neural_networks.optimizers import Optimizer
+from si.neural_networks.layers import Layer
 
 
 class Layer(metaclass=ABCMeta):
@@ -141,3 +142,98 @@ class DenseLayer(Layer):
             The shape of the output of the layer.
         """
         return (self.n_units,) 
+
+class Dropout (Layer):
+    """
+    Dropout layer for neural networks.
+
+    Randomly sets a fraction of input units to zero during training
+    to prevent overfitting.
+    """
+
+    def __init__(self, probability:float):
+        """
+        Initializes the Dropout layer.
+
+        Parameters
+        ----------
+        probability : float
+            Dropout rate (fraction of neurons to drop), between 0 and 1.
+        """
+        super().__init__()
+        self.probability = probability
+        self.mask = None
+        self.input = None
+        self.output = None
+    
+    def forward_propagation(self, input_data, training: bool = True):
+        """
+        Performs forward propagation.
+
+        During training:
+        - Randomly drops neurons using a binomial mask
+        - Scales the output to maintain expected value
+
+        During inference:
+        - Returns the input unchanged
+
+        Parameters
+        ----------
+        input_data : np.ndarray
+            Input data to the layer.
+        training : bool
+            Whether the network is in training mode.
+
+        Returns
+        -------
+        np.ndarray
+            Output of the layer.
+        """
+        self.input = input_data
+        if training: 
+            #keep probability = 1-p
+            keep_prob = 1 - self.probability
+            scaling = 1 / keep_prob
+            self.mask = np.random.binomial (1, keep_prob, size=input_data.shape)
+            self.output = input_data * self.mask * scaling
+            return self.output
+        else:
+            return input_data
+
+    def backward_propagation(self, output_error, learning_rate = None):
+        """
+        Performs backward propagation.
+
+        Parameters
+        ----------
+        output_error : np.ndarray
+            Gradient of the loss with respect to the output.
+
+        Returns
+        -------
+        np.ndarray
+            Gradient of the loss with respect to the input.
+        """
+        return output_error * self.mak
+    
+    def output_shape(self):
+        """
+        Returns the output shape of the layer.
+
+        Returns
+        -------
+        tuple
+            Output shape (same as input shape).
+        """
+        return self.input.shape()     
+    
+    def parameters (self):
+        """
+        Returns the number of trainable parameters.
+
+        Returns
+        -------
+        int
+            Always 0 (Dropout has no learnable parameters).
+        """
+        return 0
